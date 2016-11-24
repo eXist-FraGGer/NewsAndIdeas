@@ -3,31 +3,41 @@ var bcsSrvc = Promise.promisifyAll(require('../services/bcsSrvc')),
 	bcsIdeaSrvc = Promise.promisifyAll(require('../services/bcsIdeaSrvc')),
 	bcsNewsSrvc = Promise.promisifyAll(require('../services/bcsNewsSrvc')),
 	tagSrvc = Promise.promisifyAll(require('../services/tagSrvc')),
+	tickerSrvc = Promise.promisifyAll(require('../services/tickerSrvc')),
 	optionsSrvc = Promise.promisifyAll(require('../services/optionsSrvc')),
-	articleTagSrvc = Promise.promisifyAll(require('../services/articleTagSrvc'));
+	articleTagSrvc = Promise.promisifyAll(require('../services/articleTagSrvc')),
+	articleTickerSrvc = Promise.promisifyAll(require('../services/articleTickerSrvc'));
+
 var bcsService,
-	bcsIdeaService,
+	bcsIdeasService,
 	bcsNewsService,
 	tagService,
+	tickerService,
 	optionsService,
-	articleTagSrvc;
+	articleTagService,
+	articleTickeServicer;
 
 var services;
 
 var bcsController = function(db) {
 	bcsService = new bcsSrvc(db);
-	bcsIdeaService = new bcsIdeaSrvc(db);
+	bcsIdeasService = new bcsIdeaSrvc(db);
 	bcsNewsService = new bcsNewsSrvc(db);
 	tagService = new tagSrvc(db);
+	tickerService = new tickerSrvc(db);
 	optionsService = new optionsSrvc(db);
-	articleTagSrvc = new articleTagSrvc(db);
+	articleTagService = new articleTagSrvc(db);
+	articleTickeServicer = new articleTickerSrvc(db);
+
 	services = {
 		Bcs: bcsService,
-		BcsIdeas: bcsIdeaService,
+		BcsIdeas: bcsIdeasService,
 		BcsNews: bcsNewsService,
 		Tag: tagService,
+		Ticker: tickerService,
 		Options: optionsService,
-		ArticleTag: articleTagSrvc
+		ArticleTag: articleTagService,
+		ArticleTicker: articleTickeServicer
 	}
 
 	this.iter = 0;
@@ -65,7 +75,7 @@ var bcsController = function(db) {
 												if (!state)
 													services[options.service].add(item)
 													.then(articleId => {
-														var tags = item.tags;
+														var tags = item.tags || [];
 														tags.forEach(function(t_item, i, tags) {
 															services['Tag'].getByName(t_item)
 																.then(tagId => {
@@ -97,6 +107,41 @@ var bcsController = function(db) {
 																})
 																.catch(error => {
 																	console.log('Tag getByName', error);
+																});
+														});
+														var tickers = item.tickers || [];
+														tickers.forEach(function(t_item, i, tickers) {
+															services['Ticker'].getByName(t_item)
+																.then(tickerId => {
+																	//console.log('tickerId', tickerId);
+																	if (tickerId) {
+																		services['ArticleTicker'].add({
+																				articleId: articleId,
+																				tickerId: tickerId
+																			})
+																			.then(data => { /* Success */ })
+																			.catch(error => {
+																				console.log('if ArticleTicker add', error);
+																			});
+																	} else {
+																		services['Ticker'].add(t_item)
+																			.then(tickerId => {
+																				services['ArticleTicker'].add({
+																						articleId: articleId,
+																						tickerId: tickerId
+																					})
+																					.then(data => { /* Success */ })
+																					.catch(error => {
+																						console.log('else ArticleTicker add', error);
+																					});
+																			})
+																			.catch(error => {
+																				console.log('Ticker add', error);
+																			});
+																	}
+																})
+																.catch(error => {
+																	console.log('Ticker getByName', error);
 																});
 														});
 													})
@@ -166,7 +211,7 @@ var bcsController = function(db) {
 				service: 'BcsNews',
 				limit: 100,
 				offset: 100,
-				iter: 180
+				iter: 0
 			});
 			res.send('Synchronize News Starting');
 		},

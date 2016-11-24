@@ -1,10 +1,10 @@
 var Promise = require('bluebird');
 
-var TagService = function(db) {
+var TickerService = function(db) {
 	var self = this;
 	var getByNamePrivate = name => {
 		return new Promise(function(resolve, reject) {
-			db.oneOrNone('SELECT id FROM tag WHERE name=$1', name)
+			db.oneOrNone('SELECT id FROM ticker WHERE name=$1', name)
 				.then(data => {
 					if (data) resolve(data.id);
 					resolve(null);
@@ -15,15 +15,16 @@ var TagService = function(db) {
 
 		});
 	};
+
 	return {
 		getAll: data => {
 			return new Promise(function(resolve, reject) {
-				db.any('SELECT * FROM tag')
+				db.any('SELECT * FROM ticker')
 					.then(data => {
 						resolve({
 							status: 'success',
 							data: data,
-							message: 'Retrieved ALL tags'
+							message: 'Retrieved ALL tickers'
 						});
 					})
 					.catch(error => {
@@ -34,7 +35,7 @@ var TagService = function(db) {
 		getByName: getByNamePrivate,
 		add: name => {
 			return new Promise(function(resolve, reject) {
-				db.one('INSERT INTO tag(name) VALUES($1) returning id', name)
+				db.one('INSERT INTO ticker(name) VALUES($1) returning id', name)
 					.then(function(data) {
 						resolve(data.id);
 					})
@@ -48,5 +49,5 @@ var TagService = function(db) {
 };
 
 module.exports = function(db) {
-	return new TagService(db);
+	return new TickerService(db);
 }

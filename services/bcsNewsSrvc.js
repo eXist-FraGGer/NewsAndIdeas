@@ -12,31 +12,21 @@ var BcsNewsService = function(db) {
 							message: 'Retrieved ALL News'
 						});
 					})
-					.catch(err => {
-						reject(err);
+					.catch(error => {
+						reject(error);
 					});
 			});
 		},
 		add: data => {
 			return new Promise(function(resolve, reject) {
 				db.one("INSERT INTO article(id, timestamp, access, type, date, title, announce, body, \"imgSmall\", \"imgMedium\", \"imgBig\", service)" +
-						"VALUES (${id}, ${timestamp}, ${access}, 1, ${date}, ${title}, ${announce}, ${body}, ${imgSmall}, ${imgMedium}, ${imgBig}, 'BCS') returning \"articleID\"", data)
+						"VALUES (${id}, ${timestamp}, ${access}, 1, ${date}, ${title}, ${announce}, ${body}, ${imgSmall}, ${imgMedium}, ${imgBig}, 'BCS') returning \"articleId\"", data)
 					.then(function(data) {
-						resolve(data.articleID);
+						resolve(data.articleId);
 					})
 					.catch(function(error) {
 						reject(error);
 					});
-				/*db.tx(t => t.batch(data.map(l => t.one(
-						"INSERT INTO article(id, timestamp, access, type, date, title, announce, body, \"imgSmall\", \"imgMedium\", \"imgBig\", service)" +
-						"VALUES (${id}, ${timestamp}, ${access}, ${type}, ${date}, ${title}, ${announce}, ${body}, ${imgSmall}, ${imgMedium}, ${imgBig}, 'BCS') returning \"articleID\"", l))))
-					.then(data => {
-						var ids = data.map(d => d.articleID);
-						resolve(ids);
-					})
-					.catch(error => {
-						reject(error);
-					});*/
 			});
 		},
 		getByID: id => {

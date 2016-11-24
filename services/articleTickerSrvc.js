@@ -1,15 +1,15 @@
 var Promise = require('bluebird');
 
-var ArticleTagService = function(db) {
+var ArticleTickerService = function(db) {
 	return {
 		getAll: data => {
 			return new Promise(function(resolve, reject) {
-				db.any('SELECT * FROM \"Article_Tag\"')
+				db.any('SELECT * FROM \"Article_Ticker\"')
 					.then(data => {
 						resolve({
 							status: 'success',
 							data: data,
-							message: 'Retrieved ALL Article_Tag'
+							message: 'Retrieved ALL Article_Tickers'
 						});
 					})
 					.catch(error => {
@@ -19,9 +19,9 @@ var ArticleTagService = function(db) {
 		},
 		getByArticleID: id => {
 			return new Promise(function(resolve, reject) {
-				db.oneOrNone("SELECT * FROM \"Article_Tag\" WHERE \"articleID\"=$1", id)
+				db.oneOrNone("SELECT id FROM \"Article_Ticker\" WHERE \"articleId\"=$1", id)
 					.then(data => {
-						resolve(data);
+						resolve(data.id);
 					})
 					.catch(error => {
 						reject(error);
@@ -31,16 +31,16 @@ var ArticleTagService = function(db) {
 		},
 		add: data => {
 			return new Promise(function(resolve, reject) {
-				if (!data.articleId || !data.tagId)
+				if (!data.articleId || !data.tickerId)
 					reject('No corrected data');
 				else {
-					db.one("INSERT INTO \"Article_Tag\"(\"articleId\", \"tagId\") VALUES(${articleId}, ${tagId}) returning id", data)
+					db.one("INSERT INTO \"Article_Ticker\"(\"articleId\", \"tickerId\") VALUES(${articleId}, ${tickerId}) returning id", data)
 						.then(function(data) {
 							resolve(data.id);
 						})
-					.catch(function(error) {
-								if (error.code != 23505)
-									reject(error);
+						.catch(function(error) {
+							if (error.code != 23505)
+								reject(error);
 						});
 				}
 			});
@@ -49,5 +49,5 @@ var ArticleTagService = function(db) {
 };
 
 module.exports = function(db) {
-	return new ArticleTagService(db);
+	return new ArticleTickerService(db);
 }
