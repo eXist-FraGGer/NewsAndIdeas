@@ -1,0 +1,27 @@
+extends layout
+
+block content
+	div
+		ul#menuUl
+			li: a(href="/") Home
+	h1 Bcs Ideas
+	
+	div
+		table
+			thead
+				tr
+					th Title
+			tbody
+				each d in data
+					tr
+						td
+							li: =d.title
+
+	div
+		ul#pages
+			if page > 0 
+				li: a(href="/bcsIdeas/?page=" + 
+				(page-1)) Prev
+			if data.length == 100
+				li: a(href="/bcsIdeas/?page=" + 
+				(page+1)) Next

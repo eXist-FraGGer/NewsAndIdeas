@@ -1,16 +1,27 @@
 var Promise = require('bluebird');
+var options = {
+	promiseLib: Promise
+};
+var pgp = require("pg-promise")(options);
 
 var BcsNewsService = function(db) {
 	return {
-		getAll: data => {
+		get: data => {
 			return new Promise(function(resolve, reject) {
-				db.any('SELECT * FROM article WHERE service="BCS" AND type=1')
+				db.any("SELECT * FROM article WHERE service='BCS' AND type=1 LIMIT 100 OFFSET $1", (data.page || 0) * 100)
 					.then(data => {
-						resolve({
-							status: 'success',
-							data: data,
-							message: 'Retrieved ALL News'
-						});
+						resolve(data);
+					})
+					.catch(error => {
+						reject(error);
+					});
+			});
+		},
+		count: () => {
+			return new Promise(function(resolve, reject) {
+				db.any("SELECT COUNT(*) AS count FROM article WHERE service='BCS' AND type=1")
+					.then(data => {
+						resolve(data[0].count);
 					})
 					.catch(error => {
 						reject(error);
@@ -19,14 +30,28 @@ var BcsNewsService = function(db) {
 		},
 		add: data => {
 			return new Promise(function(resolve, reject) {
-				db.one("INSERT INTO article(id, timestamp, access, type, date, title, announce, body, \"imgSmall\", \"imgMedium\", \"imgBig\", service)" +
+				var cs = new pgp.helpers.ColumnSet(['id', 'timestamp', 'access', 'type', 'date', 'title', 'announce', 'body', 'imgSmall', 'imgMedium', 'imgBig', 'service'], {
+					table: 'article'
+				});
+				data.forEach(function(item, i, data) {
+					item.service = 'BCS';
+				});
+				var query = pgp.helpers.insert(data, cs) + " returning id, \"articleId\"";
+				db.many(query)
+					.then(data => {
+						resolve(data);
+					})
+					.catch(error => {
+						reject(error);
+					});
+				/*db.one("INSERT INTO article(id, timestamp, access, type, date, title, announce, body, \"imgSmall\", \"imgMedium\", \"imgBig\", service)" +
 						"VALUES (${id}, ${timestamp}, ${access}, 1, ${date}, ${title}, ${announce}, ${body}, ${imgSmall}, ${imgMedium}, ${imgBig}, 'BCS') returning \"articleId\"", data)
 					.then(function(data) {
 						resolve(data.articleId);
 					})
 					.catch(function(error) {
 						reject(error);
-					});
+					});*/
 			});
 		},
 		getByID: id => {

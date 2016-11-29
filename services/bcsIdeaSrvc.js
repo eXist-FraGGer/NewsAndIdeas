@@ -6,15 +6,22 @@ var pgp = require("pg-promise")(options);
 
 var BcsIdeaService = function(db) {
 	return {
-		getAll: data => {
+		get: data => {
 			return new Promise(function(resolve, reject) {
-				db.any('SELECT * FROM tag')
+				db.any("SELECT * FROM article WHERE service='BCS' AND type=2 LIMIT 100 OFFSET $1", (data.page || 0) * 100)
 					.then(data => {
-						resolve({
-							status: 'success',
-							data: data,
-							message: 'Retrieved ALL Ideas'
-						});
+						resolve(data);
+					})
+					.catch(error => {
+						reject(error);
+					});
+			});
+		},
+		count: () => {
+			return new Promise(function(resolve, reject) {
+				db.any("SELECT COUNT(*) AS count FROM article WHERE service='BCS' AND type=2")
+					.then(data => {
+						resolve(data[0].count);
 					})
 					.catch(error => {
 						reject(error);
@@ -23,7 +30,7 @@ var BcsIdeaService = function(db) {
 		},
 		add: data => {
 			return new Promise(function(resolve, reject) {
-				/*var cs = new pgp.helpers.ColumnSet(['dateOpen', 'dateClose', 'priceOpen', 'priceClose', 'horizon', 'profit', 'profitFact', 'ProfitPotential', 'recommend', 'strategy', 'risk_level', 'market', 'range', 'isClosed', 'id', 'timestamp', 'access', 'type', 'date', 'title', 'announce', 'body', 'imgSmall', 'imgMedium', 'imgBig', 'service'], {
+				var cs = new pgp.helpers.ColumnSet(['dateOpen', 'dateClose', 'priceOpen', 'priceClose', 'horizon', 'profit', 'profitFact', 'ProfitPotential', 'recommend', 'strategy', 'risk_level', 'market', 'range', 'isClosed', 'id', 'timestamp', 'access', 'type', 'date', 'title', 'announce', 'body', 'imgSmall', 'imgMedium', 'imgBig', 'service'], {
 					table: 'article'
 				});
 				data.forEach(function(item, i, data) {
@@ -34,27 +41,12 @@ var BcsIdeaService = function(db) {
 						item.dateClose = date.getFullYear() + "-" + ('0' + (date.getMonth() + 1)).slice(-2) + "-" + ('0' + date.getDate()).slice(-2);
 					}
 				});
-				var query = pgp.helpers.insert(data, cs) + " returning id";
+				var query = pgp.helpers.insert(data, cs) + " returning id, \"articleId\"";
 				db.many(query)
 					.then(data => {
 						resolve(data);
 					})
 					.catch(error => {
-						reject(error);
-					});*/
-
-				
-				if (data.dateClose == "") {
-					var date = new Date(data.dateOpen);
-					date.setFullYear(date.getFullYear(), date.getMonth(), date.getDate() + parseFloat(data.horizon));
-					data.dateClose = date.getFullYear() + "-" + ('0' + (date.getMonth() + 1)).slice(-2) + "-" + ('0' + date.getDate()).slice(-2);
-				}
-				db.one("INSERT INTO article(\"dateOpen\", \"dateClose\", \"priceOpen\", \"priceClose\", horizon, profit, \"profitFact\", \"ProfitPotential\", recommend, strategy, \"risk_level\", market, range, \"isClosed\", id, timestamp, access, type, date, title, announce, body, \"imgSmall\", \"imgMedium\", \"imgBig\", service)" +
-						"VALUES (${dateOpen}, ${dateClose}, ${priceOpen}, ${priceClose}, ${horizon}, ${profit}, ${profitFact}, ${ProfitPotential}, ${recommend}, ${strategy}, ${risk_level}, ${market}, ${range}, ${isClosed}, ${id}, ${timestamp}, ${access}, 2, ${date}, ${title}, ${announce}, ${body}, ${imgSmall}, ${imgMedium}, ${imgBig}, 'BCS') returning \"articleId\"", data)
-					.then(function(data) {
-						resolve(data.articleId);
-					})
-					.catch(function(error) {
 						reject(error);
 					});
 			});

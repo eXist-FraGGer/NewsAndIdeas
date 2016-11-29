@@ -1,5 +1,23 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+	h1= title
+	p Welcome to #{title}
+
+	ul#syncLinks
+		li
+			a(href="/syncInvestIdeas") Синхронизация с Invest-Idei.ru
+		li
+			a(href="/syncBcsNews") Синхронизация Новостей с bcs-express.ru
+		li
+			a(href="/syncBcsIdeas") Синхронизация с bcs-express.ru
+
+	p Show Links
+
+	ul#showLinks
+		li
+			a(href="/investIdeas") Invest Idei
+		li
+			a(href="/bcsNews") Bcs Express News
+		li
+			a(href="/bcsIdeas") Bcs Express Ideas

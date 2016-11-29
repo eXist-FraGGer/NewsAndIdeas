@@ -17,6 +17,7 @@
   "devDependencies": {
     "bluebird": "^3.4.6",
     "pg-promise": "^5.4.3",
-    "superagent": "^3.0.0"
+    "superagent": "^3.0.0",
+    "xml2js": "^0.4.17"
   }
 }

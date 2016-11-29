@@ -38,9 +38,9 @@ var ArticleTagService = function(db) {
 						.then(function(data) {
 							resolve(data.id);
 						})
-					.catch(function(error) {
-								if (error.code != 23505)
-									reject(error);
+						.catch(function(error) {
+							if (error.code != 23505)
+								reject(error);
 						});
 				}
 			});
