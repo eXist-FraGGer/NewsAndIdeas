@@ -42,16 +42,14 @@ var vcNewsService = function(db) {
 		},
 		add: data => {
 			return new Promise(function(resolve, reject) {
-				var cs = new pgp.helpers.ColumnSet(['title', 'imgMedium', 'announce', 'broker', 'id', 'timestamp', 'body', 'type', 'service'], {
+				var cs = new pgp.helpers.ColumnSet(['title', 'announce', 'id', 'timestamp', 'body', 'type', 'service'], {
 					table: 'article'
 				});
 				data.forEach(function(item, i, data) {
 					item.service = 'vc';
 					item.type = 1;
-					item.imgMedium = item.link;
 					item.announce = item.description;
-					item.broker = item.author;
-					item.id = item.guid.id;
+					item.id = item.guid[0]['_'];
 					item.timestamp = new Date(item.pubDate).getTime();
 					item.body = item['yandex:full-text'];
 				});
@@ -72,6 +70,18 @@ var vcNewsService = function(db) {
 						resolve(data);
 					})
 					.catch(error => {
+						reject(error);
+					});
+			});
+		},
+		getExists: data => {
+			return new Promise(function(resolve, reject) {
+				db.manyOrNone("SELECT id FROM article WHERE service='vc' AND type = 1 AND id IN (" + pgp.as.csv(data) + ")")
+					.then(data => {
+						resolve(data);
+					})
+					.catch(error => {
+						console.log(query);
 						reject(error);
 					});
 			});

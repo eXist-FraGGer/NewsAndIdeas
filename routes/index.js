@@ -19,6 +19,7 @@ router.get('/bcsIdeas', db.getBcsIdeas);
 router.get('/investIdeas', db.getInvestIdeas);
 router.get('/syncInvestIdeas', db.syncInvestIdeas);
 router.get('/vcNews', db.getVcNews);
+router.get('/syncVcNews', db.syncVcNews);
 
 
 module.exports = router;
